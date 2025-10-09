@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, Firestore } from 'firebase-admin/firestore';
 
 @Injectable()
 export class NotificationsRepository {
-  private db = getFirestore();
+  private get db(): Firestore {
+    return getFirestore();
+  }
 
   async addUserToken(uid: string, token: string): Promise<void> {
     const ref = this.db.doc(`users/${uid}/fcmTokens/${token}`);
@@ -12,7 +14,7 @@ export class NotificationsRepository {
         token,
         updatedAt: new Date(),
       },
-      { merge: true }, // idempotent
+      { merge: true },
     );
   }
 
@@ -25,7 +27,7 @@ export class NotificationsRepository {
 
   async listUserTokens(uid: string): Promise<string[]> {
     const snap = await this.db.collection(`users/${uid}/fcmTokens`).get();
-    return snap.docs.map((d) => d.id); // docId = token
+    return snap.docs.map((d) => d.id);
   }
 
   async listAllTokens(): Promise<string[]> {

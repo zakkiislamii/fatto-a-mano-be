@@ -16,12 +16,23 @@ import { NotificationsController } from './notifications.controller';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const saJson = config.get<string>('FIREBASE_SA_JSON');
-        if (!admin.apps.length) {
-          admin.initializeApp({
-            credential: admin.credential.cert(JSON.parse(saJson!)),
-          });
+
+        if (!saJson) {
+          throw new Error('FIREBASE_SA_JSON environment variable is not set');
         }
-        return admin;
+
+        try {
+          const serviceAccount = JSON.parse(saJson);
+
+          if (!admin.apps.length) {
+            admin.initializeApp({
+              credential: admin.credential.cert(serviceAccount),
+            });
+          }
+          return admin;
+        } catch (error) {
+          throw new Error(`Failed to parse FIREBASE_SA_JSON: ${error.message}`);
+        }
       },
     },
   ],
