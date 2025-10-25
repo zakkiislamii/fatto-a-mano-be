@@ -22,7 +22,7 @@ import { NotificationsController } from './notifications.controller';
         }
 
         try {
-          const serviceAccount = JSON.parse(saJson);
+          const serviceAccount: string = JSON.parse(saJson);
 
           if (!admin.apps.length) {
             admin.initializeApp({

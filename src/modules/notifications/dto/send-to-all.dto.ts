@@ -1,11 +1,11 @@
 import { IsString, IsNotEmpty } from 'class-validator';
 
-export class RegisterTokenDto {
+export class SendToAllDto {
   @IsString()
   @IsNotEmpty()
-  uid!: string;
+  title: string;
 
   @IsString()
   @IsNotEmpty()
-  token!: string;
+  body: string;
 }

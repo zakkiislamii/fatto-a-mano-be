@@ -19,19 +19,12 @@ export class NotificationsService {
 
   async registerToken(uid: string, token: string) {
     await this.notificationsRepo.addUserToken(uid, token);
-    // Optional: subscribe token ke topic global agar bisa "send to all"
-    try {
-      await this.fb.messaging().subscribeToTopic([token], this.topicAll);
-    } catch {
-      // abaikan kegagalan subscriber per token
-    }
+    await this.fb.messaging().subscribeToTopic([token], this.topicAll);
   }
 
   async unregisterToken(uid: string, token: string) {
     await this.notificationsRepo.removeUserToken(uid, token);
-    try {
-      await this.fb.messaging().unsubscribeFromTopic([token], this.topicAll);
-    } catch {}
+    await this.fb.messaging().unsubscribeFromTopic([token], this.topicAll);
   }
 
   async sendToUser(
@@ -50,16 +43,11 @@ export class NotificationsService {
       data: data ?? {},
       tokens,
       android: { priority: 'high' },
-      apns: {
-        headers: { 'apns-priority': '10' },
-        payload: { aps: { contentAvailable: false, sound: 'default' } },
-      },
     };
 
     const resp = await this.fb.messaging().sendEachForMulticast(message);
-
-    // Bersihkan token invalid
     const invalid: string[] = [];
+
     resp.responses.forEach((r, i) => {
       if (!r.success) {
         const code = (r.error as any)?.errorInfo?.code || r.error?.code;
@@ -83,17 +71,11 @@ export class NotificationsService {
     };
   }
 
-  async sendToAll(title: string, body: string, data?: MessageData) {
-    // Lebih efisien: kirim ke TOPIC global yang sudah disubscribe semua token.
+  async sendToAll(title: string, body: string) {
     const message: admin.messaging.Message = {
       topic: this.topicAll,
       notification: { title, body },
-      data: data ?? {},
       android: { priority: 'high' },
-      apns: {
-        headers: { 'apns-priority': '10' },
-        payload: { aps: { contentAvailable: false, sound: 'default' } },
-      },
     };
 
     const id = await this.fb.messaging().send(message);

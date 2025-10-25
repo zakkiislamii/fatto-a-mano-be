@@ -3,17 +3,17 @@ import { IsString, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
 export class SendToUserDto {
   @IsString()
   @IsNotEmpty()
-  uid!: string;
+  uid: string;
 
   @IsString()
   @IsNotEmpty()
-  title!: string;
+  title: string;
 
   @IsString()
   @IsNotEmpty()
-  body!: string;
+  body: string;
 
   @IsObject()
   @IsOptional()
-  data?: Record<string, string>;
+  data: Record<string, string>;
 }
