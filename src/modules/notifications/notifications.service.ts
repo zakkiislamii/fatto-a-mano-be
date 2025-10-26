@@ -63,6 +63,8 @@ export class NotificationsService {
       invalid.map((t) => this.notificationsRepo.removeUserToken(uid, t)),
     );
 
+    await this.notificationsRepo.saveUserNotification(uid, title, body, data);
+
     return {
       success: true,
       sent: resp.successCount,
@@ -79,6 +81,7 @@ export class NotificationsService {
     };
 
     const id = await this.fb.messaging().send(message);
+    await this.notificationsRepo.saveNotificationForAll(title, body);
     return { success: true, messageId: id, topic: this.topicAll };
   }
 }
