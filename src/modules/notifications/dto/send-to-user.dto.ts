@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
 
 export class SendToUserDto {
   @IsString()
@@ -12,8 +12,4 @@ export class SendToUserDto {
   @IsString()
   @IsNotEmpty()
   body: string;
-
-  @IsObject()
-  @IsOptional()
-  data: Record<string, string>;
 }

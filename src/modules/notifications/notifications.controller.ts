@@ -34,7 +34,7 @@ export class NotificationsController {
 
   @Post('send-to-user')
   async sendToUser(@Body() dto: SendToUserDto) {
-    return this.notif.sendToUser(dto.uid, dto.title, dto.body, dto.data);
+    return this.notif.sendToUser(dto.uid, dto.title, dto.body);
   }
 
   @Post('send-to-all')

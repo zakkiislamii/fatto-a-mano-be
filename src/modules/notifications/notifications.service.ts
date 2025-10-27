@@ -3,8 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
 import { NotificationsRepository } from './notifications.repository';
 
-type MessageData = Record<string, string>;
-
 @Injectable()
 export class NotificationsService {
   private readonly topicAll: string;
@@ -27,12 +25,7 @@ export class NotificationsService {
     await this.fb.messaging().unsubscribeFromTopic([token], this.topicAll);
   }
 
-  async sendToUser(
-    uid: string,
-    title: string,
-    body: string,
-    data?: MessageData,
-  ) {
+  async sendToUser(uid: string, title: string, body: string) {
     const tokens = await this.notificationsRepo.listUserTokens(uid);
     if (tokens.length === 0) {
       return { success: false, sent: 0, error: 'No FCM tokens for user' };
@@ -40,7 +33,6 @@ export class NotificationsService {
 
     const message: admin.messaging.MulticastMessage = {
       notification: { title, body },
-      data: data ?? {},
       tokens,
       android: { priority: 'high' },
     };
@@ -63,7 +55,7 @@ export class NotificationsService {
       invalid.map((t) => this.notificationsRepo.removeUserToken(uid, t)),
     );
 
-    await this.notificationsRepo.saveUserNotification(uid, title, body, data);
+    await this.notificationsRepo.saveUserNotification(uid, title, body);
 
     return {
       success: true,

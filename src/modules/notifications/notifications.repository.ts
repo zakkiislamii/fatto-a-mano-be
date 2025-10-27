@@ -44,13 +44,11 @@ export class NotificationsRepository {
     uid: string,
     title: string,
     body: string,
-    data?: Record<string, string>,
   ): Promise<string> {
     const ref = this.db.collection(`users/${uid}/notifications`).doc();
     await ref.set({
       title,
       body,
-      data: data ?? {},
       createdAt: new Date(),
       read: false,
     });
