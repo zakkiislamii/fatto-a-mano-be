@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Injectable()
 export class SheetyService {
@@ -60,6 +61,28 @@ export class SheetyService {
       return response.data;
     } catch (error) {
       throw new Error(`Failed to create data in Sheety: ${error.message}`);
+    }
+  }
+
+  async update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.put(
+          `${this.sheetyUrl}/${id}`,
+          {
+            sheet1: updateEmployeeDto,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${this.sheetyToken}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to update data in Sheety: ${error.message}`);
     }
   }
 }
