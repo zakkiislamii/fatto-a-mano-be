@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
 
 @Injectable()
 export class SheetyService {
@@ -37,6 +38,28 @@ export class SheetyService {
       return response.data;
     } catch (error) {
       throw new Error(`Failed to fetch data from Sheety: ${error.message}`);
+    }
+  }
+
+  async create(createEmployeeDto: CreateEmployeeDto) {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post(
+          this.sheetyUrl,
+          {
+            sheet1: createEmployeeDto,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${this.sheetyToken}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to create data in Sheety: ${error.message}`);
     }
   }
 }
