@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { getFirestore, Firestore } from 'firebase-admin/firestore';
+import { getFirestore, Firestore, FieldValue } from 'firebase-admin/firestore';
 
 @Injectable()
 export class NotificationsRepository {
@@ -9,13 +9,18 @@ export class NotificationsRepository {
 
   async addUserToken(uid: string, token: string): Promise<void> {
     const ref = this.db.doc(`users/${uid}/fcmTokens/${token}`);
-    await ref.set(
-      {
+    const doc = await ref.get();
+    if (doc.exists) {
+      await ref.update({
+        updated_at: FieldValue.serverTimestamp(),
+      });
+    } else {
+      await ref.set({
         token,
-        updatedAt: new Date(),
-      },
-      { merge: true },
-    );
+        created_at: FieldValue.serverTimestamp(),
+        updated_at: FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   async removeUserToken(uid: string, token: string): Promise<void> {
@@ -49,7 +54,7 @@ export class NotificationsRepository {
     await ref.set({
       title,
       body,
-      createdAt: new Date(),
+      created_at: new Date(),
       read: false,
     });
     return ref.id;
@@ -67,7 +72,7 @@ export class NotificationsRepository {
       batch.set(notifRef, {
         title,
         body,
-        createdAt: new Date(),
+        created_at: new Date(),
         read: false,
       });
       savedIds.push(notifRef.id);
