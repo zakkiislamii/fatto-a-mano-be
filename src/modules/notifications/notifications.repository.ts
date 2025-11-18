@@ -36,13 +36,8 @@ export class NotificationsRepository {
   }
 
   async listAllTokens(): Promise<string[]> {
-    const usersSnap = await this.db.collection('users').get();
-    const tokens: string[] = [];
-    for (const userDoc of usersSnap.docs) {
-      const ts = await userDoc.ref.collection('fcmTokens').get();
-      tokens.push(...ts.docs.map((d) => d.id));
-    }
-    return tokens;
+    const snap = await this.db.collectionGroup('fcmTokens').get();
+    return snap.docs.map((d) => d.id);
   }
 
   async saveUserNotification(
@@ -54,17 +49,33 @@ export class NotificationsRepository {
     await ref.set({
       title,
       body,
-      created_at: new Date(),
+      created_at: FieldValue.serverTimestamp(),
       read: false,
     });
     return ref.id;
   }
 
-  async saveNotificationForAll(title: string, body: string): Promise<string[]> {
+  async saveBroadcastNotification(
+    title: string,
+    body: string,
+  ): Promise<string> {
+    const ref = this.db.collection('broadcastNotifications').doc();
+    await ref.set({
+      title,
+      body,
+      created_at: FieldValue.serverTimestamp(),
+    });
+    return ref.id;
+  }
+
+  async saveNotificationForAllPerUserBatch(
+    title: string,
+    body: string,
+  ): Promise<string[]> {
     const usersSnap = await this.db.collection('users').get();
     const savedIds: string[] = [];
 
-    const batch = this.db.batch();
+    let batch = this.db.batch();
     let batchCount = 0;
 
     for (const userDoc of usersSnap.docs) {
@@ -72,7 +83,7 @@ export class NotificationsRepository {
       batch.set(notifRef, {
         title,
         body,
-        created_at: new Date(),
+        created_at: FieldValue.serverTimestamp(),
         read: false,
       });
       savedIds.push(notifRef.id);
@@ -80,6 +91,7 @@ export class NotificationsRepository {
 
       if (batchCount >= 500) {
         await batch.commit();
+        batch = this.db.batch();
         batchCount = 0;
       }
     }
